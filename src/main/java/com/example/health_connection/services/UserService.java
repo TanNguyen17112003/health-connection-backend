@@ -76,13 +76,22 @@ public class UserService {
         );
     }
 
-    public AccountResponseDto getAccountInfo(User user) {
+  public AccountResponseDto getAccountInfo(User user) {
+    if (user.getRole() == UserRole.PATIENT) {
         Patient patient = this.patientRepository.findByUser(user);
         Long doctorId = patient.getDoctor_id();
         Doctor doctor = this.doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new UserNotFoundException());
         return convertToDto(user, patient, doctor);
-    } 
+    } else if (user.getRole() == UserRole.DOCTOR) {
+        Doctor doctor = this.doctorRepository.findById(user.getUser_id())
+                .orElseThrow(() -> new UserNotFoundException());
+        return convertToDto(user, null, doctor);
+    } else {
+        // Handle other roles if needed, or throw
+        throw new UserNotAllowedException();
+    }
+}
 
     public AccountResponseDto updateInfo(UpdateInfoRequestDto request, User user) {
         System.out.println("Chovy");
